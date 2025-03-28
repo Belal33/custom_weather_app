@@ -48,7 +48,7 @@ const predefinedCities = [
 	if (lastSearch) {
 		handleWeatherSearch(lastSearch.city, lastSearch.country);
 	} else {
-		showGreeting();
+		useLocationIfAvailable();
 	}
 
 	setupEventListeners();
@@ -68,7 +68,7 @@ function setupEventListeners() {
 		timeout = setTimeout(() => {
 			const [city, country] = e.target.value.split(",").map((s) => s.trim());
 			if (city) handleWeatherSearch(city, country);
-		}, 3000);
+		}, 1000);
 	});
 
 	// Theme toggle
@@ -87,6 +87,22 @@ async function handleWeatherSearch(city, country = "") {
 	} catch (error) {
 		showError(error.message);
 	}
+}
+async function handleLocationWeather({ longitude, latitude }) {
+	try {
+		const data = await fetchWeatherWithLocation({ latitude, longitude });
+		showWeather(data);
+		updateBackground(data.weather[0].main);
+	} catch (error) {
+		showError(error.message);
+	}
+}
+function useLocationIfAvailable() {
+	showGreeting();
+	navigator.geolocation.getCurrentPosition(async (position) => {
+		const { latitude, longitude } = position.coords;
+		await handleLocationWeather({ latitude, longitude });
+	});
 }
 
 // storage functions
